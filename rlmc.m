@@ -14,7 +14,7 @@ d   = numel(mu1);
 T  = 1.0;
 N  = 2^15;               % finest grid for reference
 dt = T / N;
-M  = 500;                % number of i.i.d. trajectories for Monte Carlo
+M  = 5000;                % number of i.i.d. trajectories for Monte Carlo
 R  = [1, 16, 32, 64, 128, 256, 512];   % refinement factors (R(1)=1 used as reference)
 
 %% ===== Pre-generate the driving Brownian path on the finest grid =====
@@ -24,7 +24,7 @@ dW_fine = sqrt(dt) * randn(M, N, d);    % size M x N x d
 %% ===== Helper: gradient of U for 2-component isotropic mixture (log-sum-exp stable) =====
 gradU = @(X) gradU_mog_weighted(X, mu1, mu2, s1, s2, p1, p2);  % X: M-by-d
 
-%% ===== Reference solution: classic LMC (Euler¨CMaruyama) on the finest grid =====
+%% ===== Reference solution: classic LMC (EulerÂ¨CMaruyama) on the finest grid =====
 Xref = zeros(M, d);                     % initial x0 = 0
 sqrt2 = sqrt(2);
 for n = 1:N
@@ -84,7 +84,7 @@ A   = [ones(numel(Dtvals),1), log(Dtvals(:))];
 rhs = log(sqrt_err(:));
 sol = A \ rhs; q = sol(2);                 % fitted slope
 resid = norm(A*sol - rhs);
-fprintf('Fitted slope q ¡Ö %.3f, residual %.3e\n', q, resid);
+fprintf('Fitted slope q Â¡Ã– %.3f, residual %.3e\n', q, resid);
 
 %% ====== ---- Local function: gradient of mixture potential ---- ======
 function G = gradU_mog_weighted(X, mu1, mu2, s1, s2, p1, p2)
@@ -93,7 +93,7 @@ function G = gradU_mog_weighted(X, mu1, mu2, s1, s2, p1, p2)
     [M, d] = size(X);
     Xc1 = X - mu1;                          % M-by-d
     Xc2 = X - mu2;                          % M-by-d
-    % log components up to an additive constant: log p_k - ||x-¦Ì_k||^2/(2 s_k^2) - d log s_k
+    % log components up to an additive constant: log p_k - ||x-Â¦ÃŒ_k||^2/(2 s_k^2) - d log s_k
     l1  = log(p1) - 0.5 * sum(Xc1.^2, 2) / (s1^2) - d * log(s1);   % M-by-1
     l2  = log(p2) - 0.5 * sum(Xc2.^2, 2) / (s2^2) - d * log(s2);   % M-by-1
     m   = max(l1, l2);                     % M-by-1, for log-sum-exp stability
@@ -102,3 +102,4 @@ function G = gradU_mog_weighted(X, mu1, mu2, s1, s2, p1, p2)
     a2  = 1 - a1;
     G   = (a1 ./ (s1^2)) .* Xc1 + (a2 ./ (s2^2)) .* Xc2;  % M-by-d
 end
+
